@@ -163,25 +163,6 @@ header {
 
 .input-area { padding:12px 18px; border-top:1px solid #F3F4F6; }
 
-.api-row {
-  display:flex; align-items:center; gap:8px;
-  background:#FFFBEB; border:1px solid #FDE68A;
-  border-radius:8px; padding:8px 12px; margin-bottom:10px;
-}
-.api-row label { font-size:12px; color:#92400E; white-space:nowrap; }
-.api-row input {
-  flex:1; border:1px solid #FDE68A; border-radius:6px;
-  padding:5px 10px; font-size:12px; color:#374151;
-  outline:none; background:#fff;
-}
-.api-row button {
-  background:#D97706; color:#fff; border:none;
-  border-radius:6px; padding:5px 12px;
-  font-size:12px; cursor:pointer;
-  font-family:'Noto Sans TC',sans-serif;
-}
-.api-row button:hover { background:#B45309; }
-
 .input-row { display:flex; gap:8px; align-items:flex-end; }
 
 textarea {
@@ -267,16 +248,11 @@ textarea::placeholder { color:#9CA3AF; }
     </div>
 
     <div class="input-area">
-      <div class="api-row" id="apiRow">
-        <label>🔑 API Key</label>
-        <input type="password" id="apiKey" placeholder="貼上 Claude API Key (sk-ant-...)" />
-        <button onclick="activate()">啟動</button>
-      </div>
       <div class="input-row">
         <textarea id="inp" placeholder="輸入您的問題..." rows="1"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"
           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-        <button class="send" id="sendBtn" onclick="send()" disabled>
+        <button class="send" id="sendBtn" onclick="send()">
           <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
@@ -286,7 +262,8 @@ textarea::placeholder { color:#9CA3AF; }
 </div>
 
 <script>
-let key='',hist=[],busy=false;
+const KEY='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';
+let hist=[],busy=false;
 const SID='1fv3t7I6CNJlMlWBtoPJ9-gzEvG99KH_5y2OkHjecSn8';
 const GK='AIzaSyA7-uPK4tZeXWKo0dn2_9AYR91d9gKI03c';
 const SYS=`你是「冰櫃醫生」的專業客服助理。冰櫃醫生提供全台冰櫃、冷凍冷藏設備的維修與銷售服務。
@@ -299,17 +276,7 @@ const SYS=`你是「冰櫃醫生」的專業客服助理。冰櫃醫生提供全
 
 function ts(){return new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});}
 
-function activate(){
-  const v=document.getElementById('apiKey').value.trim();
-  if(!v.startsWith('sk-ant-')){alert('請輸入正確的 Claude API Key');return;}
-  key=v;
-  document.getElementById('apiRow').style.display='none';
-  document.getElementById('sendBtn').disabled=false;
-  document.getElementById('inp').focus();
-  addBot('您好，我是冰櫃醫生的 AI 客服助理。請問有什麼可以協助您的地方？');
-}
-
-function q(t){if(!key){document.getElementById('apiKey').focus();return;}document.getElementById('inp').value=t;send();}
+function q(t){document.getElementById('inp').value=t;send();}
 
 function addUser(t){
   const c=document.getElementById('msgs');
@@ -346,16 +313,18 @@ async function querySheet(oid,phone){
 async function claude(msgs){
   const r=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+    headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:msgs})
   });
-  return (await r.json()).content[0].text;
+  const data=await r.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.content[0].text;
 }
 
 async function send(){
   const inp=document.getElementById('inp');
   const text=inp.value.trim();
-  if(!text||busy||!key)return;
+  if(!text||busy)return;
   inp.value='';inp.style.height='auto';
   busy=true;document.getElementById('sendBtn').disabled=true;
   addUser(text);hist.push({role:'user',content:text});showTyping();
@@ -375,9 +344,14 @@ async function send(){
       }
     }
     hideTyping();addBot(reply);hist.push({role:'assistant',content:reply});
-  }catch{hideTyping();addBot('很抱歉，系統連線發生問題，請稍後再試。');}
+  }catch(e){hideTyping();addBot('很抱歉，系統連線發生問題，請稍後再試。');}
   busy=false;document.getElementById('sendBtn').disabled=false;document.getElementById('inp').focus();
 }
+
+// 頁面載入後自動打招呼
+window.onload=()=>{
+  setTimeout(()=>addBot('您好，我是冰櫃醫生的 AI 客服助理。請問有什麼可以協助您的地方？'),500);
+};
 </script>
 </body>
 </html>
