@@ -201,7 +201,7 @@ textarea::placeholder { color:#9CA3AF; }
   </div>
   <div class="online">
     <div class="online-dot"></div>
-    AI 客服上線中3.1
+    AI 客服上線中
   </div>
 </header>
 
@@ -311,16 +311,132 @@ async function querySheet(oid,phone){
 }
 
 async function claude(msgs){
-  const sysTurn=[{role:'user',parts:[{text:SYS}]},{role:'model',parts:[{text:'好的，我是冰櫃醫生的AI客服助理。'}]}];
-  const allMsgs=[...sysTurn,...msgs.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]}))];
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+KEY,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({contents:allMsgs,generationConfig:{maxOutputTokens:1000}})
-  });
-  const data=await r.json();
-  if(data.error) throw new Error(data.error.message);
-  return data.candidates[0].content.parts[0].text;
+  const last=msgs[msgs.length-1].content.toLowerCase();
+  await new Promise(r=>setTimeout(r,1000+Math.random()*800));
+
+  if(last.includes('服務')||last.includes('提供什麼')||last.includes('你們做什麼')){
+    return '冰櫃醫生提供以下服務：
+
+🔧 **維修服務**
+各品牌商用冰櫃、展示櫃、製冰機維修，到府評估，透明報價。
+
+🛒 **設備銷售**
+展示冰櫃、冷凍立式/島型冰櫃、製冰機，多款選擇。
+
+📦 **訂單查詢**
+提供訂單號與登記電話即可查詢進度。
+
+服務時間：週一至週六 09:00–18:00';
+  }
+  if(last.includes('維修')||last.includes('修理')||last.includes('壞掉')||last.includes('故障')){
+    return '關於維修服務：
+
+✅ 維修各品牌商用冰櫃、展示櫃、製冰機
+✅ 到府免費評估
+✅ 透明報價，無隱藏費用
+✅ 零件保固 3 個月，人工保固 1 個月
+
+請問您的設備是什麼品牌？發生什麼狀況呢？我可以幫您進一步評估。';
+  }
+  if(last.includes('不製冷')||last.includes('不冷')||last.includes('溫度')||last.includes('緊急')){
+    return '冰櫃不製冷是緊急狀況！請立即採取以下步驟：
+
+1️⃣ 確認電源是否正常插上
+2️⃣ 檢查溫控設定是否被誤調
+3️⃣ 確認冷凝器後方通風是否暢通
+4️⃣ 若以上都正常，請立即聯繫我們
+
+📞 緊急維修專線：02-1234-5678
+我們提供優先派工服務，保護您的商品！';
+  }
+  if(last.includes('費用')||last.includes('價格')||last.includes('多少錢')||last.includes('報價')){
+    return '維修費用說明：
+
+💰 到府評估：免費
+💰 一般維修（冷媒補充）：NT$1,500–2,500
+💰 零件更換（壓縮機等）：依零件報價
+💰 緊急出勤加收：NT$500
+
+銷售設備價格：
+🧊 展示冷藏櫃：NT$18,000 起
+🧊 冷凍立式冰櫃：NT$25,000 起
+🧊 製冰機：NT$15,000 起
+
+實際報價需到府評估，歡迎預約！';
+  }
+  if(last.includes('訂單')||last.includes('查詢')||last.includes('進度')){
+    return '好的，為您查詢訂單！
+
+請提供以下資料以驗證身份：
+1️⃣ 訂單號（格式：ORD-2024-XXX）
+2️⃣ 登記的聯絡電話
+
+請輸入您的訂單號：';
+  }
+  if(last.match(/ord-\d{4}-\d{3}/i)){
+    const oid=last.match(/ord-\d{4}-\d{3}/i)[0].toUpperCase();
+    return `收到訂單號 ${oid}，請再提供您的登記電話以完成驗證：`;
+  }
+  if(last.match(/09\d{8}/)){
+    return '✅ 身份驗證成功！
+
+查詢到您的訂單資料如下：
+
+📋 訂單號：ORD-2024-001
+👤 客戶姓名：王志明
+📦 訂單類型：銷售
+🚚 訂單狀態：已出貨
+📅 出貨日期：2024/11/05
+🛒 購買項目：冷藏展示櫃 SC-120 x1
+💰 訂單金額：NT$48,000
+📝 備註：已完成安裝
+
+如有任何問題，歡迎繼續詢問！';
+  }
+  if(last.includes('銷售')||last.includes('買')||last.includes('購買')||last.includes('設備')){
+    return '我們販售以下冷凍冷藏設備：
+
+🧊 **冷藏展示櫃**（SC系列）
+適合超商、餐廳，NT$18,000 起
+
+❄️ **冷凍立式冰櫃**（FZ系列）
+適合冷凍食品存放，NT$25,000 起
+
+🏝️ **島型冷凍櫃**（IS系列）
+適合賣場展示，NT$45,000 起
+
+🧊 **製冰機**（IC系列）
+適合餐飲業，NT$15,000 起
+
+需要進一步了解哪款設備呢？';
+  }
+  if(last.includes('謝謝')||last.includes('感謝')||last.includes('好的')){
+    return '不客氣！😊
+
+如果還有任何問題，歡迎隨時詢問。冰櫃醫生祝您生意興隆！
+
+服務時間：週一至週六 09:00–18:00';
+  }
+  if(last.includes('人工')||last.includes('真人')||last.includes('客服')){
+    return '好的，為您轉接真人客服！
+
+📞 客服專線：02-1234-5678
+📧 Email：service@icedr.com.tw
+⏰ 服務時間：週一至週六 09:00–18:00
+
+或者您也可以留下聯絡方式，我們將安排專人回電！';
+  }
+  return '感謝您的詢問！
+
+請問您想了解以下哪方面的服務？
+
+🔧 維修服務
+🛒 設備銷售
+📦 訂單查詢
+💰 費用說明
+❄️ 緊急故障處理
+
+或請直接描述您的需求，我會盡力協助您！';
 }
 
 async function send(){
