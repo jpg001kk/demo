@@ -201,7 +201,7 @@ textarea::placeholder { color:#9CA3AF; }
   </div>
   <div class="online">
     <div class="online-dot"></div>
-    AI 客服上線中 1.0
+    AI 客服上線中2.0
   </div>
 </header>
 
@@ -262,7 +262,7 @@ textarea::placeholder { color:#9CA3AF; }
 </div>
 
 <script>
-const KEY='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';
+const KEY='AIzaSyCNaGtiY_DR_5BCypT-zDc4d1trF3EjpS8';
 let hist=[],busy=false;
 const SID='1fv3t7I6CNJlMlWBtoPJ9-gzEvG99KH_5y2OkHjecSn8';
 const GK='AIzaSyA7-uPK4tZeXWKo0dn2_9AYR91d9gKI03c';
@@ -311,14 +311,17 @@ async function querySheet(oid,phone){
 }
 
 async function claude(msgs){
-  const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+  const allMsgs=[{role:'user',parts:[{text:SYS+'
+
+請依照以上角色設定回答以下問題。'}]},{role:'model',parts:[{text:'好的，我明白了，我會依照冰櫃醫生客服助理的角色設定來回答。'}]},...msgs.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]}))];
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${KEY}`,{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEY}`,'HTTP-Referer':'https://jpg001kk.github.io/demo/','X-Title':'冰櫃醫生AI客服'},
-    body:JSON.stringify({model:'meta-llama/llama-3.3-8b-instruct:free',max_tokens:1000,messages:[{role:'system',content:SYS},...msgs]})
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:allMsgs,generationConfig:{maxOutputTokens:1000}})
   });
   const data=await r.json();
   if(data.error) throw new Error(data.error.message);
-  return data.choices[0].message.content;
+  return data.candidates[0].content.parts[0].text;
 }
 
 async function send(){
