@@ -237,7 +237,7 @@ textarea::placeholder { color:#9CA3AF; }
       <div class="welcome">
         <div class="welcome-icon">🧊</div>
         <h3>您好，歡迎光臨冰櫃醫生</h3>
-        <p>請問有什麼可以協助您的地方？<br>維修、銷售、訂單查詢，歡迎隨時告知。</p>
+        <p>請問有什麼可以協助您333的地方？<br>維修、銷售、訂單查詢，歡迎隨時告知。</p>
         <div class="chips">
           <button class="chip" onclick="q('你們提供哪些服務？')">服務項目</button>
           <button class="chip" onclick="q('我要查訂單')">查詢訂單</button>
@@ -262,7 +262,7 @@ textarea::placeholder { color:#9CA3AF; }
 </div>
 
 <script>
-const KEY='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';
+const KEY='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';
 let hist=[],busy=false;
 const SID='1fv3t7I6CNJlMlWBtoPJ9-gzEvG99KH_5y2OkHjecSn8';
 const GK='AIzaSyA7-uPK4tZeXWKo0dn2_9AYR91d9gKI03c';
@@ -311,14 +311,14 @@ async function querySheet(oid,phone){
 }
 
 async function claude(msgs){
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
+  const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:msgs})
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEY}`,'HTTP-Referer':'https://jpg001kk.github.io/demo/','X-Title':'冰櫃醫生AI客服'},
+    body:JSON.stringify({model:'meta-llama/llama-3.3-8b-instruct:free',max_tokens:1000,messages:[{role:'system',content:SYS},...msgs]})
   });
   const data=await r.json();
   if(data.error) throw new Error(data.error.message);
-  return data.content[0].text;
+  return data.choices[0].message.content;
 }
 
 async function send(){
