@@ -201,7 +201,7 @@ textarea::placeholder { color:#9CA3AF; }
   </div>
   <div class="online">
     <div class="online-dot"></div>
-    AI 客服上線中2.0
+    AI 客服上線中2.1
   </div>
 </header>
 
@@ -314,7 +314,7 @@ async function claude(msgs){
   const allMsgs=[{role:'user',parts:[{text:SYS+'
 
 請依照以上角色設定回答以下問題。'}]},{role:'model',parts:[{text:'好的，我明白了，我會依照冰櫃醫生客服助理的角色設定來回答。'}]},...msgs.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]}))];
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${KEY}`,{
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+KEY,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:allMsgs,generationConfig:{maxOutputTokens:1000}})
